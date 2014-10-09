@@ -1,8 +1,9 @@
 import re, glob
 import hou, os, shutil
 
+# Main function
 def BackupAllContent(inputpath):
-    backpath = hou.expandString(inputpath) + os.path.splitext(os.path.basename(hou.hipFile.name()))[0] + "/"
+    backpath = os.path.join(hou.expandString(inputpath), os.path.splitext(os.path.basename(hou.hipFile.name()))[0], "")
     subch = hou.node("/").allSubChildren()
     for child in subch:
         parms_in_nodes = child.parms()
@@ -20,13 +21,16 @@ def BackupAllContent(inputpath):
                         os.makedirs(newpath)
                     files = glob.glob(hou.expandString(re.sub(r'\$F\d', "*", parm.unexpandedString())))
                     for fls in files:
-                        if not os.path.exists(newpath + "/" + os.path.basename(fls)):
+                        if not os.path.exists(os.path.join(newpath, os.path.basename(fls))):
                             shutil.copy(fls, newpath)
-                    path_to_imp = "$HIP/" + fl_to_copy + "/" + os.path.split(parm.unexpandedString())[1]
+                    path_to_imp = os.path.join("$HIP/", fl_to_copy, os.path.split(parm.unexpandedString())[1])
                     parm.set(path_to_imp)
     hipN = backpath + os.path.basename(hou.hipFile.name())
     hou.hipFile.save(hipN)
 
+
+# Create dialog and execute function
+# You can add this line to shell for quck access
 backpath = hou.ui.selectFile(title="Select Directory to Backup", file_type=hou.fileType.Directory)
 if backpath != "":
     BackupAllContent(backpath)
